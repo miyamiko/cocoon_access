@@ -3,15 +3,19 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import date
-st.title('イチゲブログ別館2階のアクセス数（Cocoon集計値）')
+st.title('イチゲブログ、イチゲブログ別館2階の週間アクセス数（Cocoon集計値）')
 st.caption('WordPress+テーマCocoonで運用しているブログ。データベースから取得して表示しています。')
 st.markdown('###### 詳細は')
 link = '[イチゲブログ](https://kikuichige.com/23946/)'
 st.markdown(link, unsafe_allow_html=True)
-
+selected_blog = st.selectbox("ブログを選択してください", ["イチゲブログ", "イチゲブログ別館2階"])
 #csvをデータフレームで開く
-df = pd.read_csv("weekly.csv",index_col=0)
-df1 = pd.read_csv('wp_posts.csv', usecols=["ID","post_title"])
+if selected_blog == 'イチゲブログ':
+    df = pd.read_csv("weekly_ona.csv",index_col=0)
+    df1 = pd.read_csv('wp_posts_ona.csv', usecols=["ID","post_title"])
+else:
+    df = pd.read_csv("weekly.csv",index_col=0)
+    df1 = pd.read_csv('wp_posts.csv', usecols=["ID","post_title"])
 # 特定の列名を変更
 df1.rename(columns={'ID': 'post_id'}, inplace=True)
 # post_idをキーにして内部結合
@@ -77,7 +81,7 @@ st.title('以下、管理人領域')
 password = st.text_input("パスワードを入力してください", type="password")
 correct_password = "mysecret"
 if password == correct_password:
-    st.success("weekly.CSVファイルをアップロードしてください。")
+    st.success("CSVファイルをアップロードしてください。")
     uploaded_file1 = st.file_uploader("weekly.csvファイルのアップロード", type=["csv"], key="uploaded_file1")
 
     # アップロードされたファイルが存在する場合
@@ -99,6 +103,25 @@ if password == correct_password:
         # データフレームを保存
         df8.to_csv("wp_posts.csv")
         # st.success("wp_posts.csvファイルをアップロードしてください。")
+    uploaded_file3 = st.file_uploader("weekly_ona.csvファイルのアップロード", type=["csv"], key="uploaded_file3")
+
+    # アップロードされたファイルが存在する場合
+    if uploaded_file3 is not None:
+        # アップロードされたファイルをデータフレームに読み込む
+        df7 = pd.read_csv(uploaded_file3,index_col=0) 
+
+        # データフレームを保存
+        df7.to_csv("weekly_ona.csv")
+
+    uploaded_file4 = st.file_uploader("wp_posts_ona.csvファイルのアップロード", type=["csv"], key="uploaded_file4")
+
+    # アップロードされたファイルが存在する場合
+    if uploaded_file4 is not None:
+        # アップロードされたファイルをデータフレームに読み込む
+        df8 = pd.read_csv(uploaded_file4,index_col=0) 
+
+        # データフレームを保存
+        df8.to_csv("wp_posts_ona.csv")
 else:
     st.error("パスワードが正しくありません。再試行してください。")
 
