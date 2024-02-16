@@ -19,12 +19,29 @@ else:
 # 特定の列名を変更
 df1.rename(columns={'ID': 'post_id'}, inplace=True)
 # post_idをキーにして内部結合
-merged_df = pd.merge(df, df1, on='post_id', how='inner')
+# merged_df = pd.merge(df, df1, on='post_id', how='inner')
 
 # df1だけにあるpost_idの行を削除
-merged_df = merged_df[merged_df['post_id'].isin(df1['post_id'])]
+# merged_df = merged_df[merged_df['post_id'].isin(df1['post_id'])]
 # post_id重複行を削除
-merged_df=merged_df.drop_duplicates(subset=['post_id'])
+# merged_df=merged_df.drop_duplicates(subset=['post_id'])
+# 日付型 (datetime) に変換
+df['date'] = pd.to_datetime(df['date'])
+# 先週の日付を取得
+last_week_start = df['date'].max() - pd.DateOffset(weeks=1)
+last_week_end = last_week_start + pd.DateOffset(days=6)
+
+# 先週のデータを抽出
+last_week_data = df[(df['date'] >= last_week_start) & (df['date'] <= last_week_end)]
+
+# 先週のアクセス数で降順に並び替え
+last_week_sorted = last_week_data.sort_values(by='count', ascending=False)
+# post_idをキーにして内部結合
+merged_lastweek_df = pd.merge(last_week_sorted, df1, on='post_id', how='inner')
+
+# df1だけにあるpost_idの行を削除
+merged_lastweek_df = merged_lastweek_df[merged_lastweek_df['post_id'].isin(df1['post_id'])]
+merged_df=merged_lastweek_df
 # 記事選択post_id
 # セレクトボックスでpost_titleを選択
 selected_title1 = st.selectbox('post_titleを選択してください。アクセス数を表示します。（赤表示）', merged_df['post_title'], key='selectbox1')
@@ -39,8 +56,7 @@ selected_id2 = merged_df[merged_df['post_title'] == selected_title2]['post_id'].
 # 結果を表示
 st.write(f'Selected Post ID: {selected_id2}')
 
-# 日付型 (datetime) に変換
-df['date'] = pd.to_datetime(df['date'])
+
 
 # データフレーム選択
 data = df
@@ -64,7 +80,11 @@ if data['count'][data['post_id'] == selected_id2].max()>ymax:
 # plt.ylim(0,ymax)  
 # y軸の目盛を指定（ymaxが大きくなると見えなくなるので上をつかったほうがいい）
 # np.arange(0, ymax+1, 1)は、0からymaxまでの範囲を1刻みで生成した配列です。この配列をyticksに渡すことで、y軸の目盛を1刻みで表示することができます。
-plt.yticks(np.arange(0, ymax+1, 1))
+if ymax>50:
+    unit=5
+else:
+    unit=1
+plt.yticks(np.arange(0, ymax+1, unit))
 plt.xlabel('Date')
 plt.ylabel('Count')
 plt.xticks(rotation=45)
