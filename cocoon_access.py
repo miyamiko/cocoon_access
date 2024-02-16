@@ -43,6 +43,7 @@ merged_lastweek_df = pd.merge(last_week_sorted, df1, on='post_id', how='inner')
 merged_lastweek_df = merged_lastweek_df[merged_lastweek_df['post_id'].isin(df1['post_id'])]
 merged_df=merged_lastweek_df
 # 記事選択post_id
+st.write("選択肢のタイトルは先週のアクセス数順になっています。")
 # セレクトボックスでpost_titleを選択
 selected_title1 = st.selectbox('post_titleを選択してください。アクセス数を表示します。（赤表示）', merged_df['post_title'], key='selectbox1')
 # 選択されたpost_titleに対応するIDを取得
