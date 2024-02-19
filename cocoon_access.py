@@ -15,7 +15,7 @@ if selected_blog == 'イチゲブログ':
     df1 = pd.read_csv('wp_posts_ona.csv', usecols=["ID","post_title"])
 else:
     df = pd.read_csv("weekly.csv",index_col=0)
-    df1 = pd.read_csv('wp_posts.csv', usecols=["ID","post_title"])
+    df1 = pd.read_csv('wp_posts_sin.csv', usecols=["ID","post_title"])
 # 特定の列名を変更
 df1.rename(columns={'ID': 'post_id'}, inplace=True)
 # post_idをキーにして内部結合
@@ -41,7 +41,17 @@ merged_lastweek_df = pd.merge(last_week_sorted, df1, on='post_id', how='inner')
 
 # df1だけにあるpost_idの行を削除
 merged_lastweek_df = merged_lastweek_df[merged_lastweek_df['post_id'].isin(df1['post_id'])]
-merged_df=merged_lastweek_df
+# merged_lastweek_dfに存在しないpost_titleを抽出
+missing_post_titles = df1[~df1['post_title'].isin(merged_lastweek_df['post_title'])]
+
+# 欠損値を含む行を追加
+missing_post_titles['data'] = None
+missing_post_titles['count'] = None
+
+# merged_lastweek_dfに追加
+merged_df = pd.concat([merged_lastweek_df, missing_post_titles], ignore_index=True)
+# merged_df=merged_lastweek_df
+
 # 記事選択post_id
 st.write("選択肢のタイトルは先週のアクセス数順になっています。")
 # セレクトボックスでpost_titleを選択
